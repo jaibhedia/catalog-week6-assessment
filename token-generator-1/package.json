@@ -1,0 +1,20 @@
+{
+  "name": "token-generator-1",
+  "version": "1.0.0",
+  "description": "This project allows users to create their own ERC20 tokens on the Ethereum blockchain. It consists of a Solidity smart contract for the token and a React-based frontend application that interacts with the Ethereum network through MetaMask.",
+  "main": "hardhat.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "@openzeppelin/contracts": "^5.2.0",
+    "dotenv": "^16.4.7",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.22.19"
+  }
+}

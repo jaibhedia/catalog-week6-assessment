@@ -1,0 +1,247 @@
+.app-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .app-main {
+    min-height: 400px;
+  }
+  
+  .app-footer {
+    margin-top: 50px;
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+  }
+  
+  .wallet-connection {
+    margin: 15px 0;
+  }
+  
+  .connect-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+  }
+  
+  .connect-button:hover {
+    background-color: #2980b9;
+  }
+  
+  .connect-button:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+  }
+  
+  .connected-status {
+    display: flex;
+    align-items: center;
+  }
+  
+  .connected-badge {
+    background-color: #2ecc71;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-right: 10px;
+  }
+  
+  .account-address {
+    font-family: monospace;
+  }
+  
+  .error-message {
+    color: #e74c3c;
+    margin-top: 10px;
+  }
+  
+  .connect-prompt {
+    text-align: center;
+    padding: 40px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px dashed #ddd;
+  }
+  
+
+  .token-form-container {
+    background-color: #f9f9f9;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  .token-form {
+    margin-top: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .deploy-button {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    font-weight: bold;
+    transition: background-color 0.2s;
+  }
+  
+  .deploy-button:hover {
+    background-color: #219653;
+  }
+  
+  .deploy-button:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+  }
+  
+  .status-message {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 4px;
+  }
+  
+  .status-message.success {
+    background-color: #d5f5e3;
+    border-left: 4px solid #2ecc71;
+  }
+  
+  .status-message.error {
+    background-color: #fadbd8;
+    border-left: 4px solid #e74c3c;
+  }
+  
+  .token-details {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #eef8fb;
+    border-radius: 8px;
+    border: 1px solid #d6eaf8;
+  }
+  
+  .token-details h3 {
+    margin-top: 0;
+    color: #2980b9;
+  }
+  
+  .view-on-explorer {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+  }
+  
+  .view-on-explorer:hover {
+    background-color: #2980b9;
+  }
+ 
+
+.network-status {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .network-status.success {
+    background-color: #d5f5e3;
+    border-left: 4px solid #2ecc71;
+    color: #27ae60;
+  }
+  
+  .network-status.warning {
+    background-color: #fef9e7;
+    border-left: 4px solid #f1c40f;
+    color: #f39c12;
+  }
+  
+ 
+  .network-switcher {
+    margin-top: 10px;
+  }
+  
+  .network-switcher button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 5px;
+  }
+  .network-status {
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .network-status.warning {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    color: #856404;
+  }
+  
+  .network-switch-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 12px;
+  }
+  
+  .network-switch-button:hover {
+    background-color: #0069d9;
+  }
