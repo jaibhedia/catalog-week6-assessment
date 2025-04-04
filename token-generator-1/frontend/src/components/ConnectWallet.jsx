@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getWeb3 } from '../utils/web3';
 import { DEFAULT_CHAIN_ID, SUPPORTED_CHAINS } from '../utils/chainconfig';
 
@@ -7,10 +7,19 @@ const ConnectWallet = ({ setAccount }) => {
     const [connecting, setConnecting] = useState(false);
     const [connectedAccount, setConnectedAccount] = useState('');
     const [currentChainId, setCurrentChainId] = useState(null);
+    const isMounted = useRef(true);
 
- 
+    // Track component mounting status
+    useEffect(() => {
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
+
     useEffect(() => {
         const handleAccountsChanged = (accounts) => {
+            if (!isMounted.current) return;
+            
             console.log('Account changed to:', accounts[0]);
             if (accounts.length > 0) {
                 setConnectedAccount(accounts[0]);
@@ -22,12 +31,19 @@ const ConnectWallet = ({ setAccount }) => {
         };
 
         const handleChainChanged = (chainId) => {
+            if (!isMounted.current) return;
+            
             console.log('Network changed to:', parseInt(chainId, 16));
             setCurrentChainId(parseInt(chainId, 16));
-            window.location.reload(); 
+            window.location.reload(); // Best practice for chain changes
         };
 
-        checkIfConnected();
+        // Initial connection check
+        const initialCheck = async () => {
+            await checkIfConnected();
+        };
+        
+        initialCheck();
         
         if (window.ethereum) {
             window.ethereum.on('accountsChanged', handleAccountsChanged);
@@ -47,22 +63,20 @@ const ConnectWallet = ({ setAccount }) => {
         
         if (!window.ethereum) {
             console.log("No ethereum provider detected");
-            setError('MetaMask is not installed. Please install it to use this app.');
+            if (isMounted.current) setError('MetaMask is not installed. Please install it to use this app.');
             return;
         }
         
         try {
-          
             const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-            setCurrentChainId(parseInt(chainId, 16));
+            if (isMounted.current) setCurrentChainId(parseInt(chainId, 16));
             
-       
             const accounts = await window.ethereum.request({ 
                 method: 'eth_accounts'  
             });
             console.log("Current accounts:", accounts);
             
-            if (accounts.length > 0) {
+            if (accounts.length > 0 && isMounted.current) {
                 console.log("Already connected to account:", accounts[0]);
                 setConnectedAccount(accounts[0]);
                 setAccount(accounts[0]);
@@ -82,20 +96,24 @@ const ConnectWallet = ({ setAccount }) => {
             return true;
         } catch (error) {
             console.error('Failed to switch network:', error);
-            setError(`Please switch to ${SUPPORTED_CHAINS[DEFAULT_CHAIN_ID]?.name || 'the correct network'}`);
+            if (isMounted.current) setError(`Please switch to ${SUPPORTED_CHAINS[DEFAULT_CHAIN_ID]?.name || 'the correct network'}`);
             return false;
         }
     };
 
     const connectWallet = async () => {
         console.log("Attempting to connect wallet...");
+        if (!isMounted.current) return;
+        
         setConnecting(true);
         setError('');
         
         if (!window.ethereum) {
             console.error("No ethereum provider found");
-            setError('MetaMask is not installed. Please install it to use this app.');
-            setConnecting(false);
+            if (isMounted.current) {
+                setError('MetaMask is not installed. Please install it to use this app.');
+                setConnecting(false);
+            }
             return;
         }
         
@@ -105,8 +123,8 @@ const ConnectWallet = ({ setAccount }) => {
             
             if (currentChain !== DEFAULT_CHAIN_ID) {
                 const switched = await switchNetwork();
-                if (!switched) {
-                    setConnecting(false);
+                if (!switched || !isMounted.current) {
+                    if (isMounted.current) setConnecting(false);
                     return;
                 }
             }
@@ -117,17 +135,17 @@ const ConnectWallet = ({ setAccount }) => {
             });
             console.log("Accounts received:", accounts);
             
-            if (accounts.length > 0) {
+            if (accounts.length > 0 && isMounted.current) {
                 setConnectedAccount(accounts[0]);
                 setAccount(accounts[0]);
-            } else {
+            } else if (isMounted.current) {
                 setError('No accounts found. Please check MetaMask.');
             }
         } catch (err) {
             console.error("Connection error:", err);
-            setError(`Failed to connect: ${err.message || 'Unknown error'}`);
+            if (isMounted.current) setError(`Failed to connect: ${err.message || 'Unknown error'}`);
         } finally {
-            setConnecting(false);
+            if (isMounted.current) setConnecting(false);
         }
     };
 
