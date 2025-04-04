@@ -11,7 +11,7 @@ function TokenForm({ account }) {
   const [deployedTokenAddress, setDeployedTokenAddress] = useState('');
   const [currentChainId, setCurrentChainId] = useState(null);
   const [networkError, setNetworkError] = useState(false);
- const [deployedContracts, setDeployedContracts] = useState([]);
+  const [deployedContracts, setDeployedContracts] = useState([]);
 
   useEffect(() => {
     const checkNetwork = async () => {
@@ -32,17 +32,19 @@ function TokenForm({ account }) {
     }
     
     if (window.ethereum) {
-      window.ethereum.on('chainChanged', () => {
+      const handleChainChanged = () => {
         console.log("Network changed");
         checkNetwork();
-      });
+      };
+      
+      window.ethereum.on('chainChanged', handleChainChanged);
+      
+      return () => {
+        if (window.ethereum && window.ethereum.removeListener) {
+          window.ethereum.removeListener('chainChanged', handleChainChanged);
+        }
+      };
     }
-    
-    return () => {
-      if (window.ethereum && window.ethereum.removeListener) {
-        window.ethereum.removeListener('chainChanged', checkNetwork);
-      }
-    };
   }, [account]);
 
   const handleNetworkSwitch = async () => {
@@ -66,13 +68,20 @@ function TokenForm({ account }) {
     setStatus('Deploying token... Please confirm in MetaMask');
 
     try {
-
       await validateNetwork();
       
       console.log(`Creating token: ${tokenName}, Symbol: ${tokenSymbol}, Count: ${tokenSupply}`);
       const tokenAddress = await deployToken(tokenName, tokenSymbol, parseInt(tokenSupply));
       setDeployedTokenAddress(tokenAddress);
       setStatus(`Token deployed successfully at: ${tokenAddress}`);
+      
+      // Add to deployed contracts after successful deployment
+      setDeployedContracts(prev => [...prev, {
+        address: tokenAddress,
+        name: tokenName,
+        symbol: tokenSymbol,
+        supply: tokenSupply
+      }]);
     } catch (error) {
       console.error('Error deploying token:', error);
       
@@ -88,12 +97,9 @@ function TokenForm({ account }) {
       setIsDeploying(false);
     }
   };
-  setDeployedContracts(prev => [...prev, {
-    address: deployedTokenAddress,
-    name: tokenName,
-    symbol: tokenSymbol,
-    supply: tokenSupply
-  }]);
+  
+  // REMOVED: The state update that was causing infinite renders
+  // setDeployedContracts(prev => [...prev, {...}]);
   
   return (
     <div className="token-form-container">
@@ -193,6 +199,22 @@ function TokenForm({ account }) {
           >
             View on Explorer
           </button>
+        </div>
+      )}
+      
+      {/* Display deployed contracts list */}
+      {deployedContracts.length > 0 && (
+        <div className="deployed-contracts">
+          <h3>Your Deployed Tokens</h3>
+          <ul>
+            {deployedContracts.map((contract, index) => (
+              <li key={index}>
+                <strong>{contract.name} ({contract.symbol})</strong>
+                <div>Address: {contract.address.slice(0,8)}...{contract.address.slice(-6)}</div>
+                <div>Supply: {contract.supply}</div>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
