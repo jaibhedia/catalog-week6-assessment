@@ -1,7 +1,6 @@
 import React from 'react';
 import { SUPPORTED_CHAINS } from '../utils/chainconfig';
 
-// Convert to class component to avoid functional component re-render issues
 class ConnectWallet extends React.Component {
   constructor(props) {
     super(props);
@@ -11,18 +10,14 @@ class ConnectWallet extends React.Component {
       connectedAccount: '',
       currentChainId: null
     };
-
-    // Bind methods
     this.connectWallet = this.connectWallet.bind(this);
     this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
     this.handleChainChanged = this.handleChainChanged.bind(this);
   }
 
   componentDidMount() {
-    // Check if already connected when component mounts
     this.checkConnection();
     
-    // Set up event listeners
     if (window.ethereum) {
       window.ethereum.on('chainChanged', this.handleChainChanged);
       window.ethereum.on('accountsChanged', this.handleAccountsChanged);
@@ -30,14 +25,12 @@ class ConnectWallet extends React.Component {
   }
   
   componentWillUnmount() {
-    // Clean up event listeners
     if (window.ethereum?.removeListener) {
       window.ethereum.removeListener('chainChanged', this.handleChainChanged);
       window.ethereum.removeListener('accountsChanged', this.handleAccountsChanged);
     }
   }
-  
-  // Handle account changes
+
   handleAccountsChanged(accounts) {
     if (accounts.length > 0) {
       this.setState({ connectedAccount: accounts[0] });
@@ -47,14 +40,12 @@ class ConnectWallet extends React.Component {
       this.props.setAccount('');
     }
   }
-  
-  // Handle network changes
+
   handleChainChanged(chainId) {
     this.setState({ currentChainId: parseInt(chainId, 16) });
     window.location.reload();
   }
-  
-  // Check if already connected
+
   async checkConnection() {
     if (!window.ethereum) return;
     
@@ -73,7 +64,6 @@ class ConnectWallet extends React.Component {
     }
   }
   
-  // Connect wallet
   async connectWallet() {
     if (!window.ethereum) {
       this.setState({ error: 'MetaMask is not installed' });

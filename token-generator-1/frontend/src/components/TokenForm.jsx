@@ -74,8 +74,7 @@ function TokenForm({ account }) {
       const tokenAddress = await deployToken(tokenName, tokenSymbol, parseInt(tokenSupply));
       setDeployedTokenAddress(tokenAddress);
       setStatus(`Token deployed successfully at: ${tokenAddress}`);
-      
-      // Add to deployed contracts after successful deployment
+    
       setDeployedContracts(prev => [...prev, {
         address: tokenAddress,
         name: tokenName,
@@ -97,9 +96,6 @@ function TokenForm({ account }) {
       setIsDeploying(false);
     }
   };
-  
-  // REMOVED: The state update that was causing infinite renders
-  // setDeployedContracts(prev => [...prev, {...}]);
   
   return (
     <div className="token-form-container">
@@ -201,8 +197,6 @@ function TokenForm({ account }) {
           </button>
         </div>
       )}
-      
-      {/* Display deployed contracts list */}
       {deployedContracts.length > 0 && (
         <div className="deployed-contracts">
           <h3>Your Deployed Tokens</h3>

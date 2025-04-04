@@ -8,8 +8,7 @@ function InteractWithToken({ account }) {
   const [tokenInfo, setTokenInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [currentChainId, setCurrentChainId] = useState(null);
-  
-  // Move useEffect to component level
+
   useEffect(() => {
     const checkNetwork = async () => {
       if (window.ethereum) {
