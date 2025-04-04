@@ -14,13 +14,16 @@ function App() {
       </header>
       
       <main className="app-main">
-        {account ? (
-          <TokenForm account={account} />
-        ) : (
-          <div className="connect-prompt">
-            <p>Please connect your wallet to create a token</p>
-          </div>
-        )}
+      {account ? (
+  <>
+    <TokenForm account={account} />
+    <InteractWithToken account={account} />
+  </>
+  ) : (
+  <div className="connect-prompt">
+    <p>Please connect your wallet to create or interact with tokens</p>
+  </div>
+  )}
       </main>
       
       <footer className="app-footer">

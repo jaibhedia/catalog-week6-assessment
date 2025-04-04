@@ -11,6 +11,7 @@ function TokenForm({ account }) {
   const [deployedTokenAddress, setDeployedTokenAddress] = useState('');
   const [currentChainId, setCurrentChainId] = useState(null);
   const [networkError, setNetworkError] = useState(false);
+ const [deployedContracts, setDeployedContracts] = useState([]);
 
   useEffect(() => {
     const checkNetwork = async () => {
@@ -87,7 +88,13 @@ function TokenForm({ account }) {
       setIsDeploying(false);
     }
   };
-
+  setDeployedContracts(prev => [...prev, {
+    address: deployedTokenAddress,
+    name: tokenName,
+    symbol: tokenSymbol,
+    supply: tokenSupply
+  }]);
+  
   return (
     <div className="token-form-container">
       <h2>Create Your ERC20 Token</h2>

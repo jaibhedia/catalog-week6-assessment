@@ -8,7 +8,7 @@ if (typeof window !== 'undefined' && window.ethereum) {
 } else {
    
     const provider = new Web3.providers.HttpProvider(
-        'http://localhost:8545'
+        process.env.REACT_APP_RPC_URL || 'https://eth-sepolia.alchemyapi.io/v2/demo'
     );
     web3 = new Web3(provider);
 }
@@ -44,7 +44,13 @@ export async function validateNetwork() {
     console.log('Current chainId:', chainIdDecimal);
 
     
-    const validChainIds = [1, 5, 11155111, 31337, 1337];
+    const validChainIds = [1, 5, 11155111, 137];
+    const networkNames= {
+        1: 'Ethereum Mainnet',
+        5: 'Goerli Testnet',
+        11155111: 'Sepolia Testnet',
+        137: 'Polygon Mainnet',
+    }
     
     if (!validChainIds.includes(chainIdDecimal)) {
         throw new Error(`Please connect to a supported network. Current network ID: ${chainIdDecimal}`);
