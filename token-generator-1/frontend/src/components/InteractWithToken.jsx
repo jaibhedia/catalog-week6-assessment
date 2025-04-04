@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getWeb3 } from '../utils/web3';
 import { MyTokenArtifact } from '../utils/contractArtifact';
-import { DEFAULT_CHAIN_ID, SUPPORTED_CHAINS, isChainSupported } from '../utils/chainConfig';
+import { DEFAULT_CHAIN_ID, SUPPORTED_CHAINS, isChainSupported } from './utils/chainConfig';
 
 function InteractWithToken({ account }) {
   const [tokenAddress, setTokenAddress] = useState('');
