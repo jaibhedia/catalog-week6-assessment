@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { getWeb3 } from '../utils/web3';
 import { MyTokenArtifact } from '../utils/contractArtifact';
+import { DEFAULT_CHAIN_ID, SUPPORTED_CHAINS, isChainSupported } from './utils/chainConfig';
 
 function InteractWithToken({ account }) {
   const [tokenAddress, setTokenAddress] = useState('');
@@ -9,7 +10,31 @@ function InteractWithToken({ account }) {
   
   const getTokenInfo = async () => {
     if (!tokenAddress) return;
-    
+    const [currentChainId, setCurrentChainId] = useState(null);
+
+useEffect(() => {
+  const checkNetwork = async () => {
+    if (window.ethereum) {
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      setCurrentChainId(parseInt(chainId, 16));
+    }
+  };
+  
+  checkNetwork();
+  
+  if (window.ethereum) {
+    window.ethereum.on('chainChanged', (chainId) => {
+      setCurrentChainId(parseInt(chainId, 16));
+    });
+  }
+  
+  return () => {
+    if (window.ethereum && window.ethereum.removeListener) {
+      window.ethereum.removeListener('chainChanged', () => {});
+    }
+  };
+}, []);
+
     setLoading(true);
     try {
       const web3 = getWeb3();
@@ -38,7 +63,17 @@ function InteractWithToken({ account }) {
       setLoading(false);
     }
   };
-  
+  const switchNetwork = async () => {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${DEFAULT_CHAIN_ID.toString(16)}` }],
+      });
+    } catch (error) {
+      console.error('Failed to switch network:', error);
+      alert(`Please manually switch to ${SUPPORTED_CHAINS[DEFAULT_CHAIN_ID]?.name || 'the correct network'}`);
+    }
+  };
   return (
     <div className="token-form-container">
       <h2>Interact with Existing Token</h2>
