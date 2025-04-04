@@ -1,35 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { getWeb3 } from '../utils/web3';
+import { DEFAULT_CHAIN_ID, SUPPORTED_CHAINS } from '../utils/chainConfig';
 
 const ConnectWallet = ({ setAccount }) => {
     const [error, setError] = useState('');
     const [connecting, setConnecting] = useState(false);
     const [connectedAccount, setConnectedAccount] = useState('');
+    const [currentChainId, setCurrentChainId] = useState(null);
 
-    
+ 
     useEffect(() => {
+        const handleAccountsChanged = (accounts) => {
+            console.log('Account changed to:', accounts[0]);
+            if (accounts.length > 0) {
+                setConnectedAccount(accounts[0]);
+                setAccount(accounts[0]);
+            } else {
+                setConnectedAccount('');
+                setAccount('');
+            }
+        };
+
+        const handleChainChanged = (chainId) => {
+            console.log('Network changed to:', parseInt(chainId, 16));
+            setCurrentChainId(parseInt(chainId, 16));
+            window.location.reload(); 
+        };
+
         checkIfConnected();
         
-       
         if (window.ethereum) {
-            window.ethereum.on('accountsChanged', (accounts) => {
-                console.log('Account changed to:', accounts[0]);
-                if (accounts.length > 0) {
-                    setConnectedAccount(accounts[0]);
-                    setAccount(accounts[0]);
-                } else {
-                    setConnectedAccount('');
-                    setAccount('');
-                }
-            });
+            window.ethereum.on('accountsChanged', handleAccountsChanged);
+            window.ethereum.on('chainChanged', handleChainChanged);
         }
         
         return () => {
-           
-            if (window.ethereum && window.ethereum.removeListener) {
-                window.ethereum.removeListener('accountsChanged', () => {
-                    console.log('Listener removed');
-                });
+            if (window.ethereum) {
+                window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+                window.ethereum.removeListener('chainChanged', handleChainChanged);
             }
         };
     }, [setAccount]);
@@ -44,6 +52,11 @@ const ConnectWallet = ({ setAccount }) => {
         }
         
         try {
+          
+            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+            setCurrentChainId(parseInt(chainId, 16));
+            
+       
             const accounts = await window.ethereum.request({ 
                 method: 'eth_accounts'  
             });
@@ -60,6 +73,20 @@ const ConnectWallet = ({ setAccount }) => {
         }
     };
 
+    const switchNetwork = async () => {
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: `0x${DEFAULT_CHAIN_ID.toString(16)}` }],
+            });
+            return true;
+        } catch (error) {
+            console.error('Failed to switch network:', error);
+            setError(`Please switch to ${SUPPORTED_CHAINS[DEFAULT_CHAIN_ID]?.name || 'the correct network'}`);
+            return false;
+        }
+    };
+
     const connectWallet = async () => {
         console.log("Attempting to connect wallet...");
         setConnecting(true);
@@ -73,6 +100,17 @@ const ConnectWallet = ({ setAccount }) => {
         }
         
         try {
+            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+            const currentChain = parseInt(chainId, 16);
+            
+            if (currentChain !== DEFAULT_CHAIN_ID) {
+                const switched = await switchNetwork();
+                if (!switched) {
+                    setConnecting(false);
+                    return;
+                }
+            }
+            
             console.log("Requesting accounts...");
             const accounts = await window.ethereum.request({ 
                 method: 'eth_requestAccounts' 
@@ -82,9 +120,6 @@ const ConnectWallet = ({ setAccount }) => {
             if (accounts.length > 0) {
                 setConnectedAccount(accounts[0]);
                 setAccount(accounts[0]);
-                
-                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-                console.log("Connected to chain:", chainId);
             } else {
                 setError('No accounts found. Please check MetaMask.');
             }
@@ -104,6 +139,11 @@ const ConnectWallet = ({ setAccount }) => {
                     <span className="account-address">
                         {connectedAccount.slice(0, 6)}...{connectedAccount.slice(-4)}
                     </span>
+                    {currentChainId && (
+                        <span className="network-badge">
+                            {SUPPORTED_CHAINS[currentChainId]?.name || `Chain ID: ${currentChainId}`}
+                        </span>
+                    )}
                 </div>
             ) : (
                 <button 
