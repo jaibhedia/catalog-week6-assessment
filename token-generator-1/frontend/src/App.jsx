@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ConnectWallet from './components/ConnectWallet';
 import TokenForm from './components/TokenForm';
+import InteractWithToken from './components/InteractWithToken';
 import './App.css';
 
 function App() {
