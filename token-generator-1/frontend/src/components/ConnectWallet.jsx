@@ -1,119 +1,128 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getWeb3 } from '../utils/web3';
-import { DEFAULT_CHAIN_ID, SUPPORTED_CHAINS } from '../utils/chainconfig';
+import React, { useState, useEffect, useRef } from 'react';
+import { SUPPORTED_CHAINS } from '../utils/chainconfig';
 
 const ConnectWallet = ({ setAccount }) => {
     const [error, setError] = useState('');
     const [connecting, setConnecting] = useState(false);
     const [connectedAccount, setConnectedAccount] = useState('');
     const [currentChainId, setCurrentChainId] = useState(null);
-    const isMounted = useRef(true);
+    const isMountedRef = useRef(true);
+    const initialCheckDoneRef = useRef(false);
 
     // Track component mounting status
     useEffect(() => {
-        isMounted.current = true;
         return () => {
-            isMounted.current = false;
+            isMountedRef.current = false;
         };
     }, []);
 
-    // Safe state setters
-    const safeSetError = useCallback((value) => {
-        if (isMounted.current) setError(value);
-    }, []);
-    
-    const safeSetCurrentChainId = useCallback((value) => {
-        if (isMounted.current) setCurrentChainId(value);
-    }, []);
-    
-    const safeSetConnectedAccount = useCallback((value) => {
-        if (isMounted.current) setConnectedAccount(value);
-    }, []);
-
-    useEffect(() => {
-        // Check if already connected - defined inside to avoid closure issues
-        const checkIfConnected = async () => {
-            console.log("Checking if already connected...");
-            
-            if (!window.ethereum) {
-                console.log("No ethereum provider detected");
-                safeSetError('MetaMask is not installed. Please install it to use this app.');
-                return;
-            }
-            
-            try {
-                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-                
-                // Check if component is still mounted before proceeding
-                if (!isMounted.current) return;
-                safeSetCurrentChainId(parseInt(chainId, 16));
-                
-                const accounts = await window.ethereum.request({ 
-                    method: 'eth_accounts'  
-                });
-                console.log("Current accounts:", accounts);
-                
-                // Check again if component is still mounted
-                if (!isMounted.current) return;
-                
-                if (accounts.length > 0) {
-                    console.log("Already connected to account:", accounts[0]);
-                    safeSetConnectedAccount(accounts[0]);
-                    setAccount(accounts[0]);
-                    safeSetError('');
-                }
-            } catch (err) {
-                console.error("Error checking connection:", err);
-            }
-        };
-
-        const handleAccountsChanged = (accounts) => {
-            if (!isMounted.current) return;
-            
-            console.log('Account changed to:', accounts[0]);
-            if (accounts.length > 0) {
-                safeSetConnectedAccount(accounts[0]);
-                setAccount(accounts[0]);
-            } else {
-                safeSetConnectedAccount('');
-                setAccount('');
-            }
-        };
-
-        const handleChainChanged = (chainId) => {
-            if (!isMounted.current) return;
-            
-            console.log('Network changed to:', parseInt(chainId, 16));
-            safeSetCurrentChainId(parseInt(chainId, 16));
-            window.location.reload(); // Best practice for chain changes
-        };
-        
-        // Run the initial check
-        checkIfConnected();
-        
-        // Set up event listeners
-        if (window.ethereum) {
-            window.ethereum.on('accountsChanged', handleAccountsChanged);
-            window.ethereum.on('chainChanged', handleChainChanged);
+    // Wrap setAccount to make it safe
+    const safeSetAccount = (account) => {
+        if (isMountedRef.current) {
+            setAccount(account);
         }
-        
-        // Clean up event listeners
-        return () => {
-            isMounted.current = false; // Ensure this happens first
-            if (window.ethereum && window.ethereum.removeListener) {
-                window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-                window.ethereum.removeListener('chainChanged', handleChainChanged);
-            }
-        };
-    }, [setAccount, safeSetError, safeSetCurrentChainId, safeSetConnectedAccount]);
-
-    // Rest of your component...
-    const switchNetwork = async () => {
-        /* Your existing code */
     };
 
+    // Handle wallet connection status
+    useEffect(() => {
+        // Skip if check was already done
+        if (initialCheckDoneRef.current) return;
+        initialCheckDoneRef.current = true;
+
+        const initConnection = async () => {
+            try {
+                // First, check if ethereum is available
+                if (!window.ethereum) {
+                    setError('MetaMask is not installed. Please install it to use this app.');
+                    return;
+                }
+
+                // Event handlers
+                const handleAccountsChanged = (accounts) => {
+                    if (!isMountedRef.current) return;
+                    console.log('Accounts changed:', accounts);
+                    
+                    if (accounts.length > 0) {
+                        setConnectedAccount(accounts[0]);
+                        safeSetAccount(accounts[0]);
+                    } else {
+                        setConnectedAccount('');
+                        safeSetAccount('');
+                    }
+                };
+
+                const handleChainChanged = (chainId) => {
+                    if (!isMountedRef.current) return;
+                    console.log('Chain changed:', parseInt(chainId, 16));
+                    setCurrentChainId(parseInt(chainId, 16));
+                };
+
+                // Set up listeners first
+                window.ethereum.on('accountsChanged', handleAccountsChanged);
+                window.ethereum.on('chainChanged', handleChainChanged);
+
+                // Get chain ID
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (isMountedRef.current) {
+                    setCurrentChainId(parseInt(chainId, 16));
+                }
+
+                // Check accounts
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (isMountedRef.current && accounts.length > 0) {
+                    console.log('Found connected account:', accounts[0]);
+                    setConnectedAccount(accounts[0]);
+                    safeSetAccount(accounts[0]);
+                }
+
+                // Clean up on component unmount
+                return () => {
+                    if (window.ethereum?.removeListener) {
+                        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+                        window.ethereum.removeListener('chainChanged', handleChainChanged);
+                    }
+                };
+            } catch (err) {
+                console.error('Failed to initialize connection:', err);
+                if (isMountedRef.current) {
+                    setError('Failed to connect to wallet');
+                }
+            }
+        };
+
+        // Start the initialization process
+        initConnection();
+    }, []);
+
     const connectWallet = async () => {
-        /* Your existing code */
+        if (connecting || !window.ethereum) return;
+        
+        setConnecting(true);
+        setError('');
+        
+        try {
+            const accounts = await window.ethereum.request({ 
+                method: 'eth_requestAccounts' 
+            });
+            
+            if (isMountedRef.current) {
+                if (accounts.length > 0) {
+                    setConnectedAccount(accounts[0]);
+                    safeSetAccount(accounts[0]);
+                } else {
+                    setError('No accounts found');
+                }
+            }
+        } catch (err) {
+            console.error('Connection error:', err);
+            if (isMountedRef.current) {
+                setError(`Failed to connect: ${err.message || 'Unknown error'}`);
+            }
+        } finally {
+            if (isMountedRef.current) {
+                setConnecting(false);
+            }
+        }
     };
 
     return (
