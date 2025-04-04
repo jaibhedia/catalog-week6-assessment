@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getWeb3 } from '../utils/web3';
-import { DEFAULT_CHAIN_ID, SUPPORTED_CHAINS } from './utils/chainConfig';
+import { DEFAULT_CHAIN_ID, SUPPORTED_CHAINS } from '../utils/chainConfig';
 
 const ConnectWallet = ({ setAccount }) => {
     const [error, setError] = useState('');
